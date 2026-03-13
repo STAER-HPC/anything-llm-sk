@@ -91,7 +91,7 @@ export function MetricsProvider({ children }) {
  * @param {metrics: {duration:number, outputTps: number}} props
  * @returns
  */
-export default function RenderMetrics({ metrics = {} }) {
+export default function RenderMetrics({ metrics = {}, model = null }) {
   // Inherit the showMetricsAutomatically state from the MetricsProvider so the state is shared across all chats
   const { showMetricsAutomatically, setShowMetricsAutomatically } =
     useContext(MetricsContext);
@@ -110,6 +110,7 @@ export default function RenderMetrics({ metrics = {} }) {
       className={`border-none flex justify-end items-center gap-x-[8px] ${showMetricsAutomatically ? "opacity-100" : "opacity-0"} md:group-hover:opacity-100 transition-all duration-300`}
     >
       <p className="cursor-pointer text-xs font-mono text-theme-text-secondary opacity-50">
+        {model && <>{model}&nbsp;&nbsp;|&nbsp;&nbsp;</>}
         {formatDuration(metrics.duration)} ({formatTps(metrics.outputTps)}{" "}
         tok/s)
       </p>

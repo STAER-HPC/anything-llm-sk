@@ -39,7 +39,7 @@ class PPIOLLM {
     };
 
     this.embedder = embedder ?? new NativeEmbedder();
-    this.defaultTemp = 0.7;
+    this.defaultTemp = 1.0;
 
     if (!fs.existsSync(cacheFolder))
       fs.mkdirSync(cacheFolder, { recursive: true });
@@ -143,7 +143,7 @@ class PPIOLLM {
     return [prompt, ...chatHistory, { role: "user", content: userPrompt }];
   }
 
-  async getChatCompletion(messages = null, { temperature = 0.7 }) {
+  async getChatCompletion(messages = null, { temperature = 1.0 }) {
     if (!(await this.isValidChatCompletionModel(this.model)))
       throw new Error(
         `PPIO chat: ${this.model} is not valid for chat completion!`
@@ -179,7 +179,7 @@ class PPIOLLM {
     };
   }
 
-  async streamGetChatCompletion(messages = null, { temperature = 0.7 }) {
+  async streamGetChatCompletion(messages = null, { temperature = 1.0 }) {
     if (!(await this.isValidChatCompletionModel(this.model)))
       throw new Error(
         `PPIO chat: ${this.model} is not valid for chat completion!`

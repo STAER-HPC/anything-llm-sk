@@ -36,12 +36,20 @@ class GenericOpenAiLLM {
     };
 
     this.embedder = embedder ?? new NativeEmbedder();
-    this.defaultTemp = 0.7;
+    this.defaultTemp = 1.0;
     this.log(`Inference API: ${this.basePath} Model: ${this.model}`);
   }
 
   get isO1Model() {
     return this.model.toLowerCase().includes("o1") || this.model.toLowerCase().includes("gpt-5");
+  }
+
+  // True for any Anthropic model routed via LiteLLM/ProxyAPI (e.g. "anthropic/claude-sonnet-4-6")
+  // or a direct Claude model name. Only these models support cache_control content blocks
+  // and require the anthropic-beta prompt-caching header.
+  get isAnthropicModel() {
+    const m = this.model.toLowerCase();
+    return m.startsWith("anthropic/") || m.includes("claude");
   }
 
   log(text, ...args) {
@@ -163,11 +171,45 @@ class GenericOpenAiLLM {
     return textResponse;
   }
 
-  async getChatCompletion(messages = null, { temperature = 0.7 }) {
+  async getChatCompletion(messages = null, { temperature = 1 }) {
+    // For Anthropic models via LiteLLM/ProxyAPI: wrap the system message and the
+    // last assistant message in content blocks with cache_control so the proxy
+    // triggers prompt cache creation. The anthropic-beta header is required by
+    // LiteLLM to forward cache_control fields to Anthropic's backend.
+    // For OpenAI/Gemini/others: automatic caching applies — no transformation needed.
+    const messagesWithCache = this.isAnthropicModel
+      ? messages.map((msg, index, arr) => {
+          if (msg.role === "system" && typeof msg.content === "string") {
+            return {
+              ...msg,
+              content: [
+                { type: "text", text: msg.content, cache_control: { type: "ephemeral" } },
+              ],
+            };
+          }
+          if (msg.role === "assistant" && typeof msg.content === "string") {
+            const isLastAssistant = !arr.slice(index + 1).some((m) => m.role === "assistant");
+            if (isLastAssistant) {
+              return {
+                ...msg,
+                content: [
+                  { type: "text", text: msg.content, cache_control: { type: "ephemeral" } },
+                ],
+              };
+            }
+          }
+          return msg;
+        })
+      : messages;
+
     const payload = {
       model: this.model,
-      messages,
+      messages: messagesWithCache,
     };
+
+    const requestOptions = this.isAnthropicModel
+      ? { headers: { "anthropic-beta": "prompt-caching-2024-07-31" } }
+      : {};
 
     if (this.isO1Model) {
       payload.max_completion_tokens = this.maxTokens;
@@ -179,7 +221,7 @@ class GenericOpenAiLLM {
 
     const result = await LLMPerformanceMonitor.measureAsyncFunction(
       this.openai.chat.completions
-        .create(payload)
+        .create(payload, requestOptions)
         .catch((e) => {
           throw new Error(e.message);
         })
@@ -204,12 +246,47 @@ class GenericOpenAiLLM {
     };
   }
 
-  async streamGetChatCompletion(messages = null, { temperature = 0.7 }) {
+  async streamGetChatCompletion(messages = null, { temperature = 1.0 }) {
+    // For Anthropic models via LiteLLM/ProxyAPI: wrap the system message and the
+    // last assistant message in content blocks with cache_control so the proxy
+    // triggers prompt cache creation. The anthropic-beta header is required by
+    // LiteLLM to forward cache_control fields to Anthropic's backend.
+    // For OpenAI/Gemini/others: automatic caching applies — no transformation needed.
+    const messagesWithCache = this.isAnthropicModel
+      ? messages.map((msg, index, arr) => {
+          if (msg.role === "system" && typeof msg.content === "string") {
+            return {
+              ...msg,
+              content: [
+                { type: "text", text: msg.content, cache_control: { type: "ephemeral" } },
+              ],
+            };
+          }
+          if (msg.role === "assistant" && typeof msg.content === "string") {
+            const isLastAssistant = !arr.slice(index + 1).some((m) => m.role === "assistant");
+            if (isLastAssistant) {
+              return {
+                ...msg,
+                content: [
+                  { type: "text", text: msg.content, cache_control: { type: "ephemeral" } },
+                ],
+              };
+            }
+          }
+          return msg;
+        })
+      : messages;
+
     const payload = {
       model: this.model,
       stream: true,
-      messages,
+      stream_options: { include_usage: true },
+      messages: messagesWithCache,
     };
+
+    const requestOptions = this.isAnthropicModel
+      ? { headers: { "anthropic-beta": "prompt-caching-2024-07-31" } }
+      : {};
 
     if (this.isO1Model) {
       payload.max_completion_tokens = this.maxTokens;
@@ -220,7 +297,7 @@ class GenericOpenAiLLM {
     }
 
     const measuredStreamRequest = await LLMPerformanceMonitor.measureStream(
-      this.openai.chat.completions.create(payload),
+      this.openai.chat.completions.create(payload, requestOptions),
       messages
       // runPromptTokenCalculation: true - There is not way to know if the generic provider connected is returning
       // the correct usage metrics if any at all since any provider could be connected.
@@ -236,11 +313,14 @@ class GenericOpenAiLLM {
     let hasUsageMetrics = false;
     let usage = {
       completion_tokens: 0,
+      cached_tokens: 0,
+      cache_write_tokens: 0,
     };
 
     return new Promise(async (resolve) => {
       let fullText = "";
       let reasoningText = "";
+      let finishReasonSeen = false;
 
       // Establish listener to early-abort a streaming response
       // in case things go sideways or the user does not like the response.
@@ -270,6 +350,20 @@ class GenericOpenAiLLM {
             if (chunk.usage.hasOwnProperty("completion_tokens")) {
               hasUsageMetrics = true; // to stop estimating counter
               usage.completion_tokens = Number(chunk.usage.completion_tokens);
+            }
+
+            // Capture cached tokens from Anthropic-style or OpenAI-style responses
+            if (chunk.usage.hasOwnProperty("cache_read_input_tokens")) {
+              usage.cached_tokens = Number(chunk.usage.cache_read_input_tokens);
+            } else if (chunk.usage?.prompt_tokens_details?.cached_tokens) {
+              usage.cached_tokens = Number(chunk.usage.prompt_tokens_details.cached_tokens);
+            }
+
+            // Capture cache write tokens (Anthropic-style cache_creation_input_tokens)
+            if (chunk.usage.hasOwnProperty("cache_creation_input_tokens")) {
+              usage.cache_write_tokens = Number(chunk.usage.cache_creation_input_tokens);
+            } else if (chunk.usage?.prompt_tokens_details?.cache_creation_input_tokens) {
+              usage.cache_write_tokens = Number(chunk.usage.prompt_tokens_details.cache_creation_input_tokens);
             }
           }
 
@@ -344,11 +438,13 @@ class GenericOpenAiLLM {
               error: false,
             });
             response.removeListener("close", handleAbort);
-            stream?.endMeasurement(usage);
-            resolve(fullText);
-            break; // Break streaming when a valid finish_reason is first encountered
+            finishReasonSeen = true;
+            // Do NOT break — the next chunk contains the usage data from stream_options
           }
         }
+        // Stream exhausted; usage chunk has been processed above
+        stream?.endMeasurement(usage);
+        resolve(fullText);
       } catch (e) {
         console.log(`\x1b[43m\x1b[34m[STREAMING ERROR]\x1b[0m ${e.message}`);
         writeResponseChunk(response, {

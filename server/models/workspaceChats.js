@@ -10,6 +10,12 @@ const WorkspaceChats = {
     threadId = null,
     include = true,
     apiSessionId = null,
+    promptTokens = 0,
+    completionTokens = 0,
+    cachedTokens = 0,
+    cacheWriteTokens = 0,
+    messageCost = 0,
+    llmModel = null,
   }) {
     try {
       const chat = await prisma.workspace_chats.create({
@@ -21,6 +27,12 @@ const WorkspaceChats = {
           thread_id: threadId,
           api_session_id: apiSessionId,
           include,
+          prompt_tokens: promptTokens,
+          completion_tokens: completionTokens,
+          cached_tokens: cachedTokens,
+          cache_write_tokens: cacheWriteTokens,
+          message_cost: messageCost,
+          llm_model: llmModel || "",
         },
       });
       return { chat, message: null };
@@ -313,6 +325,47 @@ const WorkspaceChats = {
     } catch (error) {
       console.error(error.message);
       return { chats: null, message: error.message };
+    }
+  },
+
+  calcUserCosts: async function (userId = null) {
+    const now = new Date();
+
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const whereBase = userId ? { user_id: userId } : {};
+
+    try {
+      const [daily, weekly, monthly] = await Promise.all([
+        prisma.workspace_chats.aggregate({
+          _sum: { message_cost: true },
+          where: { ...whereBase, createdAt: { gte: startOfDay } },
+        }),
+        prisma.workspace_chats.aggregate({
+          _sum: { message_cost: true },
+          where: { ...whereBase, createdAt: { gte: startOfWeek } },
+        }),
+        prisma.workspace_chats.aggregate({
+          _sum: { message_cost: true },
+          where: { ...whereBase, createdAt: { gte: startOfMonth } },
+        }),
+      ]);
+
+      return {
+        daily: daily._sum.message_cost ?? 0,
+        weekly: weekly._sum.message_cost ?? 0,
+        monthly: monthly._sum.message_cost ?? 0,
+      };
+    } catch (error) {
+      console.error("calcUserCosts error:", error.message);
+      return { daily: 0, weekly: 0, monthly: 0 };
     }
   },
 };

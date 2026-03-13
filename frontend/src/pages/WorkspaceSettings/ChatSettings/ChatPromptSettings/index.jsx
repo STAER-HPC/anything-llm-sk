@@ -9,8 +9,9 @@ import ChatPromptHistory from "./ChatPromptHistory";
 import PublishEntityModal from "@/components/CommunityHub/PublishEntityModal";
 import { useModal } from "@/hooks/useModal";
 
-// TODO: Move to backend and have user-language sensitive default prompt
-const DEFAULT_PROMPT =
+// This is shown as a placeholder example in the textarea only.
+// It is NOT an active default — leaving the prompt blank means no system prompt is sent to the LLM.
+const EXAMPLE_PROMPT =
   "Given the following conversation, relevant context, and a follow up question, reply with an answer to the current question the user is asking. Return only your response to the question given the above information following the users instructions as needed.";
 
 export default function ChatPromptSettings({ workspace, setHasChanges }) {
@@ -146,7 +147,8 @@ export default function ChatPromptSettings({ workspace, setHasChanges }) {
             <span
               className={`${!!prompt ? "hidden" : "block"} text-sm pointer-events-none absolute top-2 left-0 p-2.5 w-full h-full !text-theme-settings-input-placeholder opacity-60`}
             >
-              {DEFAULT_PROMPT}
+              {/* Example only — not active */}
+              {EXAMPLE_PROMPT}
             </span>
             {isEditing ? (
               <textarea
@@ -199,11 +201,11 @@ export default function ChatPromptSettings({ workspace, setHasChanges }) {
             )}
           </div>
           <div className="w-full flex flex-row items-center justify-between pt-2">
-            {prompt !== DEFAULT_PROMPT && (
+            {!!prompt && (
               <>
                 <button
                   type="button"
-                  onClick={() => handleRestore(DEFAULT_PROMPT)}
+                  onClick={() => handleRestore("")}
                   className="text-theme-text-primary hover:text-white light:hover:text-black text-xs font-medium"
                 >
                   Clear
@@ -211,7 +213,6 @@ export default function ChatPromptSettings({ workspace, setHasChanges }) {
                 <PublishPromptCTA
                   hidden={
                     isEditing ||
-                    prompt === DEFAULT_PROMPT ||
                     prompt?.trim().length < 10
                   }
                   onClick={() => {

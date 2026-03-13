@@ -25,7 +25,7 @@ class GroqLLM {
     };
 
     this.embedder = embedder ?? new NativeEmbedder();
-    this.defaultTemp = 0.7;
+    this.defaultTemp = 1.0;
   }
 
   #appendContext(contextTexts = []) {
@@ -169,7 +169,7 @@ class GroqLLM {
     });
   }
 
-  async getChatCompletion(messages = null, { temperature = 0.7 }) {
+  async getChatCompletion(messages = null, { temperature = 1.0 }) {
     if (!(await this.isValidChatCompletionModel(this.model)))
       throw new Error(
         `GroqAI:chatCompletion: ${this.model} is not valid for chat completion!`
@@ -207,7 +207,7 @@ class GroqLLM {
     };
   }
 
-  async streamGetChatCompletion(messages = null, { temperature = 0.7 }) {
+  async streamGetChatCompletion(messages = null, { temperature = 1.0 }) {
     if (!(await this.isValidChatCompletionModel(this.model)))
       throw new Error(
         `GroqAI:streamChatCompletion: ${this.model} is not valid for chat completion!`

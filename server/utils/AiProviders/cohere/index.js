@@ -95,7 +95,7 @@ class CohereLLM {
     return [prompt, ...chatHistory, { role: "user", content: userPrompt }];
   }
 
-  async getChatCompletion(messages = null, { temperature = 0.7 }) {
+  async getChatCompletion(messages = null, { temperature = 1.0 }) {
     if (!(await this.isValidChatCompletionModel(this.model)))
       throw new Error(
         `Cohere chat: ${this.model} is not valid for chat completion!`
@@ -133,7 +133,7 @@ class CohereLLM {
     };
   }
 
-  async streamGetChatCompletion(messages = null, { temperature = 0.7 }) {
+  async streamGetChatCompletion(messages = null, { temperature = 1.0 }) {
     if (!(await this.isValidChatCompletionModel(this.model)))
       throw new Error(
         `Cohere chat: ${this.model} is not valid for chat completion!`

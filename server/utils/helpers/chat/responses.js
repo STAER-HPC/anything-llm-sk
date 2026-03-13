@@ -157,6 +157,12 @@ function convertToChatHistory(history = []) {
         sentAt: moment(createdAt).unix(),
         feedbackScore,
         metrics: data?.metrics || {},
+        prompt_tokens: record.prompt_tokens || 0,
+        completion_tokens: record.completion_tokens || 0,
+        cached_tokens: record.cached_tokens || 0,
+        cache_write_tokens: record.cache_write_tokens || 0,
+        message_cost: record.message_cost || 0,
+        llm_model: record.llm_model || null,
       },
     ]);
   }

@@ -23,6 +23,9 @@ const User = {
     "suspended",
     "dailyMessageLimit",
     "bio",
+    "daily_cost_limit",
+    "weekly_cost_limit",
+    "monthly_cost_limit",
   ],
   validations: {
     username: (newValue = "") => {
@@ -61,6 +64,27 @@ const User = {
         throw new Error("Bio cannot be longer than 1,000 characters");
       return String(bio);
     },
+    daily_cost_limit: (val = null) => {
+      if (val === null || val === undefined || val === "") return null;
+      const limit = parseFloat(val);
+      if (isNaN(limit) || limit < 0)
+        throw new Error("Daily cost limit must be null or a non-negative number");
+      return limit;
+    },
+    weekly_cost_limit: (val = null) => {
+      if (val === null || val === undefined || val === "") return null;
+      const limit = parseFloat(val);
+      if (isNaN(limit) || limit < 0)
+        throw new Error("Weekly cost limit must be null or a non-negative number");
+      return limit;
+    },
+    monthly_cost_limit: (val = null) => {
+      if (val === null || val === undefined || val === "") return null;
+      const limit = parseFloat(val);
+      if (isNaN(limit) || limit < 0)
+        throw new Error("Monthly cost limit must be null or a non-negative number");
+      return limit;
+    },
   },
   // validations for the above writable fields.
   castColumnValue: function (key, value) {
@@ -69,6 +93,10 @@ const User = {
         return Number(Boolean(value));
       case "dailyMessageLimit":
         return value === null ? null : Number(value);
+      case "daily_cost_limit":
+      case "weekly_cost_limit":
+      case "monthly_cost_limit":
+        return value === null || value === undefined || value === "" ? null : parseFloat(value);
       default:
         return String(value);
     }
@@ -85,6 +113,9 @@ const User = {
     role = "default",
     dailyMessageLimit = null,
     bio = "",
+    daily_cost_limit = null,
+    weekly_cost_limit = null,
+    monthly_cost_limit = null,
   }) {
     const passwordCheck = this.checkPasswordComplexity(password);
     if (!passwordCheck.checkedOK) {
@@ -108,6 +139,12 @@ const User = {
           bio: this.validations.bio(bio),
           dailyMessageLimit:
             this.validations.dailyMessageLimit(dailyMessageLimit),
+          daily_cost_limit:
+            this.validations.daily_cost_limit(daily_cost_limit),
+          weekly_cost_limit:
+            this.validations.weekly_cost_limit(weekly_cost_limit),
+          monthly_cost_limit:
+            this.validations.monthly_cost_limit(monthly_cost_limit),
         },
       });
       return { user: this.filterFields(user), error: null };
@@ -327,6 +364,51 @@ const User = {
     });
 
     return currentChatCount < user.dailyMessageLimit;
+  },
+
+  /**
+   * Check if a user is within their cost limits (daily, weekly, monthly).
+   * Admins are always within limits. Null limit means no restriction.
+   * @param {User} user
+   * @returns {Promise<{withinLimits: boolean, period?: string, limit?: number}>}
+   */
+  checkCostLimits: async function (user) {
+    const { ROLES } = require("../utils/middleware/multiUserProtected");
+    if (!user || user.role === ROLES.admin) return { withinLimits: true };
+
+    const hasAnyLimit =
+      user.daily_cost_limit !== null ||
+      user.weekly_cost_limit !== null ||
+      user.monthly_cost_limit !== null;
+    if (!hasAnyLimit) return { withinLimits: true };
+
+    const { WorkspaceChats } = require("./workspaceChats");
+    const costs = await WorkspaceChats.calcUserCosts(user.id);
+
+    if (
+      user.daily_cost_limit !== null &&
+      costs.daily >= user.daily_cost_limit
+    ) {
+      return { withinLimits: false, period: "daily", limit: user.daily_cost_limit };
+    }
+    if (
+      user.weekly_cost_limit !== null &&
+      costs.weekly >= user.weekly_cost_limit
+    ) {
+      return { withinLimits: false, period: "weekly", limit: user.weekly_cost_limit };
+    }
+    if (
+      user.monthly_cost_limit !== null &&
+      costs.monthly >= user.monthly_cost_limit
+    ) {
+      return {
+        withinLimits: false,
+        period: "monthly",
+        limit: user.monthly_cost_limit,
+      };
+    }
+
+    return { withinLimits: true };
   },
 };
 

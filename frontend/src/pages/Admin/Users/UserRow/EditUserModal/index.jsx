@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X } from "@phosphor-icons/react";
 import Admin from "@/models/admin";
-import { MessageLimitInput, RoleHintDisplay } from "../..";
+import { MessageLimitInput, RoleHintDisplay, CostLimitInput } from "../..";
 import { AUTH_USER } from "@/utils/constants";
 
 export default function EditUserModal({ currentUser, user, closeModal }) {
@@ -10,6 +10,20 @@ export default function EditUserModal({ currentUser, user, closeModal }) {
   const [messageLimit, setMessageLimit] = useState({
     enabled: user.dailyMessageLimit !== null,
     limit: user.dailyMessageLimit || 10,
+  });
+  const [costLimit, setCostLimit] = useState({
+    daily: {
+      enabled: user.daily_cost_limit !== null && user.daily_cost_limit !== undefined,
+      limit: user.daily_cost_limit ?? 100,
+    },
+    weekly: {
+      enabled: user.weekly_cost_limit !== null && user.weekly_cost_limit !== undefined,
+      limit: user.weekly_cost_limit ?? 500,
+    },
+    monthly: {
+      enabled: user.monthly_cost_limit !== null && user.monthly_cost_limit !== undefined,
+      limit: user.monthly_cost_limit ?? 2000,
+    },
   });
 
   const handleUpdate = async (e) => {
@@ -26,6 +40,9 @@ export default function EditUserModal({ currentUser, user, closeModal }) {
     } else {
       data.dailyMessageLimit = null;
     }
+    data.daily_cost_limit = costLimit.daily.enabled ? costLimit.daily.limit : null;
+    data.weekly_cost_limit = costLimit.weekly.enabled ? costLimit.weekly.limit : null;
+    data.monthly_cost_limit = costLimit.monthly.enabled ? costLimit.monthly.limit : null;
 
     const { success, error } = await Admin.updateUser(user.id, data);
     if (success) {
@@ -146,6 +163,11 @@ export default function EditUserModal({ currentUser, user, closeModal }) {
                 enabled={messageLimit.enabled}
                 limit={messageLimit.limit}
                 updateState={setMessageLimit}
+              />
+              <CostLimitInput
+                role={role}
+                state={costLimit}
+                updateState={setCostLimit}
               />
               {error && <p className="text-red-400 text-sm">Error: {error}</p>}
             </div>

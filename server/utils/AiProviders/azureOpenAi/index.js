@@ -31,7 +31,7 @@ class AzureOpenAiLLM {
     };
 
     this.embedder = embedder ?? new NativeEmbedder();
-    this.defaultTemp = 0.7;
+    this.defaultTemp = 1.0;
     this.#log(
       `Initialized. Model "${this.model}" @ ${this.promptWindowLimit()} tokens.\nAPI-Version: ${this.apiVersion}.\nModel Type: ${this.isOTypeModel ? "reasoning" : "default"}`
     );
@@ -129,7 +129,7 @@ class AzureOpenAiLLM {
     ];
   }
 
-  async getChatCompletion(messages = [], { temperature = 0.7 }) {
+  async getChatCompletion(messages = [], { temperature = 1.0 }) {
     if (!this.model)
       throw new Error(
         "No OPEN_MODEL_PREF ENV defined. This must the name of a deployment on your Azure account for an LLM chat model like GPT-3.5."
@@ -161,7 +161,7 @@ class AzureOpenAiLLM {
     };
   }
 
-  async streamGetChatCompletion(messages = [], { temperature = 0.7 }) {
+  async streamGetChatCompletion(messages = [], { temperature = 1.0 }) {
     if (!this.model)
       throw new Error(
         "No OPEN_MODEL_PREF ENV defined. This must the name of a deployment on your Azure account for an LLM chat model like GPT-3.5."

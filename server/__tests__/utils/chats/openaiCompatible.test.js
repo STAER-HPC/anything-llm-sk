@@ -59,7 +59,7 @@ describe('OpenAICompatibleChat', () => {
         metrics: {},
       }),
       handleStream: jest.fn().mockResolvedValue('Mock streamed response'),
-      defaultTemp: 0.7,
+      defaultTemp: 1.0,
     };
     getLLMProvider.mockReturnValue(mockLLMConnector);
 
@@ -99,7 +99,7 @@ describe('OpenAICompatibleChat', () => {
           { role: 'user', content: 'Previous message' },
           { role: 'assistant', content: 'Previous response' }
         ],
-        temperature: 0.7
+        temperature: 1.0
       });
 
       // Verify chat was saved with correct format
@@ -144,7 +144,7 @@ describe('OpenAICompatibleChat', () => {
           { role: 'user', content: 'Previous message' },
           { role: 'assistant', content: 'Previous response' }
         ],
-        temperature: 0.7
+        temperature: 1.0
       });
 
       // Verify chat was saved without attachments
@@ -191,7 +191,7 @@ describe('OpenAICompatibleChat', () => {
           { role: 'user', content: 'Previous message' },
           { role: 'assistant', content: 'Previous response' }
         ],
-        temperature: 0.7
+        temperature: 1.0
       });
 
       // Verify streaming was handled
@@ -226,7 +226,7 @@ describe('OpenAICompatibleChat', () => {
           { role: 'user', content: 'Previous message' },
           { role: 'assistant', content: 'Previous response' }
         ],
-        temperature: 0.7
+        temperature: 1.0
       });
 
       // Verify streaming was handled

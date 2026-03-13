@@ -33,6 +33,7 @@ const SUPPORT_CUSTOM_MODELS = [
   "ppio",
   "dpais",
   "moonshotai",
+  "generic-openai",
   // Embedding Engines
   "native-embedder",
 ];
@@ -88,11 +89,23 @@ async function getCustomModels(provider = "", apiKey = null, basePath = null) {
       return await getDellProAiStudioModels(basePath);
     case "moonshotai":
       return await getMoonshotAiModels(apiKey);
+    case "generic-openai":
+      return getGenericOpenAiAllowedModels();
     case "native-embedder":
       return await getNativeEmbedderModels();
     default:
       return { models: [], error: "Invalid provider for custom models" };
   }
+}
+
+function getGenericOpenAiAllowedModels() {
+  const { PRICING_MAP } = require("../costCalculator");
+  const models = Object.keys(PRICING_MAP).map((key) => ({
+    id: key,
+    name: key,
+    organization: "Allowed Models",
+  }));
+  return { models, error: null };
 }
 
 async function openAiModels(apiKey = null) {

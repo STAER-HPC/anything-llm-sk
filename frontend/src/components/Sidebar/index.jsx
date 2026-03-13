@@ -13,6 +13,32 @@ import paths from "@/utils/paths";
 import { useTranslation } from "react-i18next";
 import { useSidebarToggle, ToggleSidebarButton } from "./SidebarToggle";
 import SearchBox from "./SearchBox";
+import System from "@/models/system";
+
+function UserCostWidget() {
+  const [costs, setCosts] = useState({ daily: 0, weekly: 0, monthly: 0 });
+
+  useEffect(() => {
+    System.userCosts().then(setCosts);
+  }, []);
+
+  const fmt = (val) =>
+    typeof val === "number" ? val.toFixed(1) : "0.0";
+
+  return (
+    <div className="flex items-center justify-between w-full px-1 py-1.5 rounded-lg bg-theme-bg-secondary light:bg-white/60 border border-theme-sidebar-border light:border-slate-200 text-[10px] text-theme-text-secondary light:text-slate-500 select-none">
+      <span className="font-medium text-theme-text-primary light:text-slate-700 whitespace-nowrap mr-1">
+        Cost:
+      </span>
+      <span className="whitespace-nowrap">Day&nbsp;<span className="text-theme-text-primary light:text-slate-800 font-semibold">{fmt(costs.daily)}</span></span>
+      <span className="mx-1 opacity-40">|</span>
+      <span className="whitespace-nowrap">Wk&nbsp;<span className="text-theme-text-primary light:text-slate-800 font-semibold">{fmt(costs.weekly)}</span></span>
+      <span className="mx-1 opacity-40">|</span>
+      <span className="whitespace-nowrap">Mo&nbsp;<span className="text-theme-text-primary light:text-slate-800 font-semibold">{fmt(costs.monthly)}</span></span>
+      <span className="ml-1 opacity-60">RUB</span>
+    </div>
+  );
+}
 
 export default function Sidebar() {
   const { user } = useUser();
@@ -60,6 +86,7 @@ export default function Sidebar() {
             <div className="flex-grow flex flex-col min-w-[235px]">
               <div className="relative h-[calc(100%-60px)] flex flex-col w-full justify-between pt-[10px] overflow-y-scroll no-scroll">
                 <div className="flex flex-col gap-y-2 pb-[60px] gap-y-[14px] overflow-y-scroll no-scroll">
+                  <UserCostWidget />
                   <SearchBox user={user} showNewWsModal={showNewWsModal} />
                   <ActiveWorkspaces />
                 </div>

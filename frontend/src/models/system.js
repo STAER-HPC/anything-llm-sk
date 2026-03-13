@@ -792,6 +792,18 @@ const System = {
       });
   },
 
+  userCosts: async function () {
+    return await fetch(`${API_BASE}/system/user-costs`, {
+      headers: baseHeaders(),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Could not fetch user costs.");
+        return res.json();
+      })
+      .then((res) => res.costs ?? { daily: 0, weekly: 0, monthly: 0 })
+      .catch(() => ({ daily: 0, weekly: 0, monthly: 0 }));
+  },
+
   experimentalFeatures: {
     liveSync: LiveDocumentSync,
     agentPlugins: AgentPlugins,

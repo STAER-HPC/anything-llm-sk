@@ -352,6 +352,12 @@ function buildMessages({
           saveEditedMessage={saveEditedMessage}
           forkThread={forkThread}
           metrics={props.metrics}
+          prompt_tokens={props.prompt_tokens}
+          completion_tokens={props.completion_tokens}
+          cached_tokens={props.cached_tokens}
+          cache_write_tokens={props.cache_write_tokens}
+          message_cost={props.message_cost}
+          llm_model={props.llm_model}
           alignmentCls={getMessageAlignment?.(props.role)}
         />
       );

@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import useGetProviderModels, {
   DISABLED_PROVIDERS,
 } from "@/hooks/useGetProvidersModels";
 import { useTranslation } from "react-i18next";
+import { API_BASE } from "@/utils/constants";
+import { baseHeaders } from "@/utils/request";
 
 export default function ChatModelSelection({
   provider,
@@ -11,6 +14,15 @@ export default function ChatModelSelection({
   const { defaultModels, customModels, loading } =
     useGetProviderModels(provider);
   const { t } = useTranslation();
+  const [priceHints, setPriceHints] = useState({});
+
+  useEffect(() => {
+    if (provider !== "generic-openai") return;
+    fetch(`${API_BASE}/system/model-price-hints`, { headers: baseHeaders() })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data?.hints) setPriceHints(data.hints); })
+      .catch(() => {});
+  }, [provider]);
   if (DISABLED_PROVIDERS.includes(provider)) return null;
 
   if (loading) {
@@ -75,13 +87,14 @@ export default function ChatModelSelection({
         {Array.isArray(customModels) && customModels.length > 0 && (
           <optgroup label="Discovered models">
             {customModels.map((model) => {
+              const hint = priceHints[model.id];
               return (
                 <option
                   key={model.id}
                   value={model.id}
                   selected={workspace?.chatModel === model.id}
                 >
-                  {model.id}
+                  {hint ? `${model.id}  ${hint}` : model.id}
                 </option>
               );
             })}

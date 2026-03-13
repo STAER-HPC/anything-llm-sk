@@ -143,8 +143,7 @@ export function RoleHintDisplay({ role }) {
   );
 }
 
-export function MessageLimitInput({ enabled, limit, updateState, role }) {
-  if (role === "admin") return null;
+export function MessageLimitInput({ enabled, limit, updateState, role }) {  if (role === "admin") return null;
   return (
     <div className="mt-4 mb-8">
       <div className="flex flex-col gap-y-1">
@@ -194,6 +193,71 @@ export function MessageLimitInput({ enabled, limit, updateState, role }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+export function CostLimitInput({ state, updateState, role }) {
+  if (role === "admin") return null;
+
+  function togglePeriod(period, enabled) {
+    updateState((prev) => ({
+      ...prev,
+      [period]: { ...prev[period], enabled },
+    }));
+  }
+
+  function setLimit(period, value) {
+    updateState((prev) => ({
+      ...prev,
+      [period]: { ...prev[period], enabled: true, limit: parseFloat(value) || 0 },
+    }));
+  }
+
+  const periods = [
+    { key: "daily", label: "Daily cost limit" },
+    { key: "weekly", label: "Weekly cost limit" },
+    { key: "monthly", label: "Monthly cost limit" },
+  ];
+
+  return (
+    <div className="mt-4 mb-8">
+      <div className="flex flex-col gap-y-1 mb-3">
+        <h2 className="text-base leading-6 font-bold text-white">
+          Limit spending by cost (RUB)
+        </h2>
+        <p className="text-xs leading-[18px] font-base text-white/60">
+          Restrict this user from sending chats once their LLM cost reaches the
+          set threshold for the given period.
+        </p>
+      </div>
+      <div className="flex flex-col gap-y-3">
+        {periods.map(({ key, label }) => (
+          <div key={key} className="flex items-center gap-x-3">
+            <label className="relative inline-flex cursor-pointer items-center shrink-0">
+              <input
+                type="checkbox"
+                checked={state[key].enabled}
+                onChange={(e) => togglePeriod(key, e.target.checked)}
+                className="peer sr-only"
+              />
+              <div className="pointer-events-none peer h-6 w-11 rounded-full bg-[#CFCFD0] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:shadow-xl after:border-none after:bg-white after:box-shadow-md after:transition-all after:content-[''] peer-checked:bg-[#32D583] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-transparent"></div>
+            </label>
+            <span className="text-white text-sm w-36 shrink-0">{label}</span>
+            {state[key].enabled && (
+              <input
+                type="number"
+                min={0}
+                step={0.01}
+                value={state[key].limit}
+                onScroll={(e) => e.target.blur()}
+                onChange={(e) => setLimit(key, e.target.value)}
+                className="border-none bg-theme-settings-input-bg text-white placeholder:text-theme-settings-input-placeholder text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5"
+              />
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ const { WorkspaceParsedFiles } = require("../../models/workspaceParsedFiles");
 const { getVectorDbClass, getLLMProvider } = require("../helpers");
 const { writeResponseChunk } = require("../helpers/chat/responses");
 const { grepAgents } = require("./agents");
+const { calculateCost } = require("../costCalculator");
 const {
   grepCommand,
   VALID_COMMANDS,
@@ -273,6 +274,13 @@ async function streamChatWithWorkspace(
   }
 
   if (completeText?.length > 0) {
+    const promptTokens = metrics?.prompt_tokens || 0;
+    const completionTokens = metrics?.completion_tokens || 0;
+    const cachedTokens = metrics?.cached_tokens || 0;
+    const cacheWriteTokens = metrics?.cache_write_tokens || 0;
+    const modelName = LLMConnector.model || "";
+    const messageCost = calculateCost(modelName, promptTokens, completionTokens, cachedTokens, cacheWriteTokens);
+
     const { chat } = await WorkspaceChats.new({
       workspaceId: workspace.id,
       prompt: message,
@@ -283,6 +291,12 @@ async function streamChatWithWorkspace(
         attachments,
         metrics,
       },
+      promptTokens,
+      completionTokens,
+      cachedTokens,
+      cacheWriteTokens,
+      messageCost,
+      llmModel: modelName,
       threadId: thread?.id || null,
       user,
     });
@@ -294,6 +308,9 @@ async function streamChatWithWorkspace(
       error: false,
       chatId: chat.id,
       metrics,
+      message_cost: messageCost,
+      cache_write_tokens: cacheWriteTokens,
+      llm_model: modelName,
     });
     return;
   }

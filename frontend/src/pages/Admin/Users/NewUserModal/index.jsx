@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { X } from "@phosphor-icons/react";
 import Admin from "@/models/admin";
 import { userFromStorage } from "@/utils/request";
-import { MessageLimitInput, RoleHintDisplay } from "..";
+import { MessageLimitInput, RoleHintDisplay, CostLimitInput } from "..";
 
 export default function NewUserModal({ closeModal }) {
   const [error, setError] = useState(null);
@@ -10,6 +10,11 @@ export default function NewUserModal({ closeModal }) {
   const [messageLimit, setMessageLimit] = useState({
     enabled: false,
     limit: 10,
+  });
+  const [costLimit, setCostLimit] = useState({
+    daily: { enabled: false, limit: 100 },
+    weekly: { enabled: false, limit: 500 },
+    monthly: { enabled: false, limit: 2000 },
   });
 
   const handleCreate = async (e) => {
@@ -19,6 +24,9 @@ export default function NewUserModal({ closeModal }) {
     const form = new FormData(e.target);
     for (var [key, value] of form.entries()) data[key] = value;
     data.dailyMessageLimit = messageLimit.enabled ? messageLimit.limit : null;
+    data.daily_cost_limit = costLimit.daily.enabled ? costLimit.daily.limit : null;
+    data.weekly_cost_limit = costLimit.weekly.enabled ? costLimit.weekly.limit : null;
+    data.monthly_cost_limit = costLimit.monthly.enabled ? costLimit.monthly.limit : null;
 
     const { user, error } = await Admin.newUser(data);
     if (!!user) window.location.reload();
@@ -130,6 +138,11 @@ export default function NewUserModal({ closeModal }) {
                 enabled={messageLimit.enabled}
                 limit={messageLimit.limit}
                 updateState={setMessageLimit}
+              />
+              <CostLimitInput
+                role={role}
+                state={costLimit}
+                updateState={setCostLimit}
               />
               {error && <p className="text-red-400 text-sm">Error: {error}</p>}
               <p className="text-white text-xs md:text-sm">

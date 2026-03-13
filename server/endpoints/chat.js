@@ -60,6 +60,22 @@ function chatEndpoints(app) {
           return;
         }
 
+        if (multiUserMode(response)) {
+          const { withinLimits, period, limit } =
+            await User.checkCostLimits(user);
+          if (!withinLimits) {
+            writeResponseChunk(response, {
+              id: uuidv4(),
+              type: "abort",
+              textResponse: null,
+              sources: [],
+              close: true,
+              error: `You have reached your ${period} cost limit of ${limit} RUB. Contact an administrator to increase your limit.`,
+            });
+            return;
+          }
+        }
+
         await streamChatWithWorkspace(
           response,
           workspace,
@@ -145,6 +161,22 @@ function chatEndpoints(app) {
             error: `You have met your maximum 24 hour chat quota of ${user.dailyMessageLimit} chats. Try again later.`,
           });
           return;
+        }
+
+        if (multiUserMode(response)) {
+          const { withinLimits, period, limit } =
+            await User.checkCostLimits(user);
+          if (!withinLimits) {
+            writeResponseChunk(response, {
+              id: uuidv4(),
+              type: "abort",
+              textResponse: null,
+              sources: [],
+              close: true,
+              error: `You have reached your ${period} cost limit of ${limit} RUB. Contact an administrator to increase your limit.`,
+            });
+            return;
+          }
         }
 
         await streamChatWithWorkspace(

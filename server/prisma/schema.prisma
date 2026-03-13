@@ -68,6 +68,9 @@ model users {
   createdAt                   DateTime                      @default(now())
   lastUpdatedAt               DateTime                      @default(now())
   dailyMessageLimit           Int?
+  daily_cost_limit            Float?
+  weekly_cost_limit           Float?
+  monthly_cost_limit          Float?
   bio                         String?                       @default("")
   workspace_chats             workspace_chats[]
   workspace_users             workspace_users[]
@@ -190,10 +193,16 @@ model workspace_chats {
   user_id        Int?
   thread_id      Int? // No relation to prevent whole table migration
   api_session_id String? // String identifier for only the dev API to partition chats in any mode.
-  createdAt      DateTime @default(now())
-  lastUpdatedAt  DateTime @default(now())
-  feedbackScore  Boolean?
-  users          users?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  createdAt         DateTime @default(now())
+  lastUpdatedAt     DateTime @default(now())
+  feedbackScore     Boolean?
+  prompt_tokens     Int?     @default(0)
+  completion_tokens Int?     @default(0)
+  cached_tokens     Int?     @default(0)
+  cache_write_tokens Int?    @default(0)
+  message_cost      Float?   @default(0.0)
+  llm_model         String?  @default("")
+  users             users?   @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model workspace_agent_invocations {

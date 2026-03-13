@@ -25,7 +25,7 @@ class LocalAiLLM {
     };
 
     this.embedder = embedder ?? new NativeEmbedder();
-    this.defaultTemp = 0.7;
+    this.defaultTemp = 1.0;
   }
 
   #appendContext(contextTexts = []) {
@@ -112,7 +112,7 @@ class LocalAiLLM {
     ];
   }
 
-  async getChatCompletion(messages = null, { temperature = 0.7 }) {
+  async getChatCompletion(messages = null, { temperature = 1.0 }) {
     if (!(await this.isValidChatCompletionModel(this.model)))
       throw new Error(
         `LocalAI chat: ${this.model} is not valid for chat completion!`
@@ -149,7 +149,7 @@ class LocalAiLLM {
     };
   }
 
-  async streamGetChatCompletion(messages = null, { temperature = 0.7 }) {
+  async streamGetChatCompletion(messages = null, { temperature = 1.0 }) {
     if (!(await this.isValidChatCompletionModel(this.model)))
       throw new Error(
         `LocalAi chat: ${this.model} is not valid for chat completion!`

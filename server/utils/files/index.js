@@ -28,8 +28,47 @@ async function fileData(filePath = null) {
   return JSON.parse(data);
 }
 
-async function viewLocalFiles() {
-  if (!fs.existsSync(documentsPath)) fs.mkdirSync(documentsPath);
+/**
+ * Returns the per-user documents directory, creating it if needed.
+ * @param {number|string} userId
+ * @returns {string}
+ */
+function userDocumentsPath(userId) {
+  const userPath = path.resolve(documentsPath, `user-${userId}`);
+  if (!fs.existsSync(userPath)) fs.mkdirSync(userPath, { recursive: true });
+  return userPath;
+}
+
+/**
+ * After the collector processes file(s), move them from the global
+ * custom-documents folder into the user's own custom-documents subfolder
+ * and update each doc's location field in-place.
+ * @param {number|string} userId
+ * @param {Array<{location: string}>} documents
+ */
+function moveDocsToUserNamespace(userId, documents = []) {
+  if (!userId || !documents.length) return;
+  const userCustomDocs = path.join(userDocumentsPath(userId), "custom-documents");
+  if (!fs.existsSync(userCustomDocs)) fs.mkdirSync(userCustomDocs, { recursive: true });
+  for (const doc of documents) {
+    if (!doc.location) continue;
+    const docFilename = path.basename(doc.location);
+    const srcPath = path.join(documentsPath, "custom-documents", docFilename);
+    if (!fs.existsSync(srcPath)) continue;
+    const destPath = path.join(userCustomDocs, docFilename);
+    try {
+      fs.renameSync(srcPath, destPath);
+      doc.location = `user-${userId}/custom-documents/${docFilename}`;
+    } catch (e) {
+      console.error(`[moveDocsToUserNamespace] Failed to move ${srcPath}:`, e.message);
+    }
+  }
+}
+
+async function viewLocalFiles(userId = null) {
+  const rootPath = userId ? userDocumentsPath(userId) : documentsPath;
+  if (!fs.existsSync(rootPath)) fs.mkdirSync(rootPath, { recursive: true });
+  const pathPrefix = userId ? `user-${userId}/` : "";
   const liveSyncAvailable = await DocumentSyncQueue.enabled();
   const directory = {
     name: "documents",
@@ -37,9 +76,9 @@ async function viewLocalFiles() {
     items: [],
   };
 
-  for (const file of fs.readdirSync(documentsPath)) {
+  for (const file of fs.readdirSync(rootPath)) {
     if (path.extname(file) === ".md") continue;
-    const folderPath = path.resolve(documentsPath, file);
+    const folderPath = path.resolve(rootPath, file);
     const isFolder = fs.lstatSync(folderPath).isDirectory();
     if (isFolder) {
       const subdocs = {
@@ -54,7 +93,7 @@ async function viewLocalFiles() {
 
       for (let i = 0; i < subfiles.length; i++) {
         const subfile = subfiles[i];
-        const cachefilename = `${file}/${subfile}`;
+        const cachefilename = `${pathPrefix}${file}/${subfile}`;
         if (path.extname(subfile) !== ".json") continue;
         filePromises.push(
           fileToPickerData({
@@ -476,4 +515,6 @@ module.exports = {
   hasVectorCachedFiles,
   purgeEntireVectorCache,
   getDocumentsByFolder,
+  userDocumentsPath,
+  moveDocsToUserNamespace,
 };

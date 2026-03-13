@@ -126,9 +126,7 @@ async function prepareChatsForExport(format = "jsonl", chatType = "workspace") {
         messages: [
           {
             role: "system",
-            content:
-              chat.workspace?.openAiPrompt ||
-              "Given the following conversation, relevant context, and a follow up question, reply with an answer to the current question the user is asking. Return only your response to the question given the above information following the users instructions as needed.",
+            content: chat.workspace?.openAiPrompt || "",
           },
         ],
       };
@@ -186,8 +184,7 @@ async function exportChatsAsType(format = "jsonl", chatType = "workspace") {
   };
 }
 
-const STANDARD_PROMPT =
-  "Given the following conversation, relevant context, and a follow up question, reply with an answer to the current question the user is asking. Return only your response to the question given the above information following the users instructions as needed.";
+const STANDARD_PROMPT = "";
 function buildSystemPrompt(chat, prompt = null) {
   const sources = safeJsonParse(chat.response)?.sources || [];
   const contextTexts = sources.map((source) => source.text);

@@ -31,7 +31,7 @@ function apiWorkspaceEndpoints(app) {
           example: {
             name: "My New Workspace",
             similarityThreshold: 0.7,
-            openAiTemp: 0.7,
+            openAiTemp: 1.0,
             openAiHistory: 20,
             openAiPrompt: "Custom prompt for responses",
             queryRefusalResponse: "Custom refusal message",

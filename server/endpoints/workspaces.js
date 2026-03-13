@@ -6,7 +6,7 @@ const {
   userFromSession,
   safeJsonParse,
 } = require("../utils/http");
-const { normalizePath, isWithin } = require("../utils/files");
+const { normalizePath, isWithin, moveDocsToUserNamespace } = require("../utils/files");
 const { Workspace } = require("../models/workspace");
 const { Document } = require("../models/documents");
 const { DocumentVectors } = require("../models/vectors");
@@ -99,6 +99,19 @@ function workspaceEndpoints(app) {
           return;
         }
 
+        // Validate chatModel against allowed models when using generic-openai
+        const effectiveProvider = data.chatProvider ?? currWorkspace.chatProvider;
+        if (effectiveProvider === "generic-openai" && data.chatModel) {
+          const { PRICING_MAP } = require("../utils/costCalculator");
+          if (!PRICING_MAP.hasOwnProperty(data.chatModel)) {
+            response.status(400).json({
+              workspace: null,
+              message: `Model "${data.chatModel}" is not in the allowed models list. Allowed models: ${Object.keys(PRICING_MAP).join(", ")}.`,
+            });
+            return;
+          }
+        }
+
         await Workspace.trackChange(currWorkspace, data, user);
         const { workspace, message } = await Workspace.update(
           currWorkspace.id,
@@ -136,13 +149,14 @@ function workspaceEndpoints(app) {
           return;
         }
 
-        const { success, reason } =
+        const { success, reason, documents: uploadedDocs } =
           await Collector.processDocument(originalname);
         if (!success) {
           response.status(500).json({ success: false, error: reason }).end();
           return;
         }
 
+        moveDocsToUserNamespace(response.locals?.user?.id, uploadedDocs);
         Collector.log(
           `Document ${originalname} uploaded processed and successfully. It is now available in documents.`
         );
@@ -182,12 +196,13 @@ function workspaceEndpoints(app) {
           return;
         }
 
-        const { success, reason } = await Collector.processLink(link);
+        const { success, reason, documents: uploadedLinkDocs } = await Collector.processLink(link);
         if (!success) {
           response.status(500).json({ success: false, error: reason }).end();
           return;
         }
 
+        moveDocsToUserNamespace(response.locals?.user?.id, uploadedLinkDocs);
         Collector.log(
           `Link ${link} uploaded processed and successfully. It is now available in documents.`
         );
@@ -914,6 +929,7 @@ function workspaceEndpoints(app) {
           return;
         }
 
+        moveDocsToUserNamespace(response.locals?.user?.id, documents);
         Collector.log(
           `Document ${originalname} uploaded processed and successfully. It is now available in documents.`
         );

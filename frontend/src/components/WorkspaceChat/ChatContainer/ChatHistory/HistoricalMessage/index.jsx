@@ -36,6 +36,12 @@ const HistoricalMessage = ({
   saveEditedMessage,
   forkThread,
   metrics = {},
+  prompt_tokens = 0,
+  completion_tokens = 0,
+  cached_tokens = 0,
+  cache_write_tokens = 0,
+  message_cost = 0,
+  llm_model = null,
   alignmentCls = "",
 }) => {
   const { t } = useTranslation();
@@ -134,6 +140,22 @@ const HistoricalMessage = ({
                 </Link>
               )}
               <ChatAttachments attachments={attachments} />
+              {role === "assistant" && (completion_tokens > 0 || metrics?.completion_tokens > 0) && (
+                <div className="text-xs text-theme-text-secondary opacity-50 mt-2 font-mono">
+                  Tokens: {prompt_tokens || metrics?.prompt_tokens || 0} in / {completion_tokens || metrics?.completion_tokens || 0} out
+                  {(() => {
+                    const reads = cached_tokens || metrics?.cached_tokens || 0;
+                    const writes = cache_write_tokens || 0;
+                    if (reads > 0 && writes > 0) return ` (Cache: ${reads} Read / ${writes} Write)`;
+                    if (reads > 0) return ` (Cache: ${reads} Read)`;
+                    if (writes > 0) return ` (Cache: ${writes} Write)`;
+                    return null;
+                  })()} 
+                  {message_cost > 0 && (
+                    <>{" | "}Cost: {message_cost.toFixed(6)} RUB</>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -149,6 +171,7 @@ const HistoricalMessage = ({
             role={role}
             forkThread={forkThread}
             metrics={metrics}
+            model={llm_model}
             alignmentCls={alignmentCls}
           />
         </div>

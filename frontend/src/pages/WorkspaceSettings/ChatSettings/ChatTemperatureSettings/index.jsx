@@ -4,7 +4,7 @@ function recommendedSettings(provider = null) {
     case "mistral":
       return { temp: 0 };
     default:
-      return { temp: 0.7 };
+      return { temp: 1.0 };
   }
 }
 
@@ -38,7 +38,7 @@ export default function ChatTemperatureSettings({
         onWheel={(e) => e.target.blur()}
         defaultValue={workspace?.openAiTemp ?? defaults.temp}
         className="border-none bg-theme-settings-input-bg text-white placeholder:text-theme-settings-input-placeholder text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5"
-        placeholder="0.7"
+        placeholder="1.0"
         required={true}
         autoComplete="off"
         onChange={() => setHasChanges(true)}

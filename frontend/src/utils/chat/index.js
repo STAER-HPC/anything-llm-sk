@@ -102,6 +102,9 @@ export default function handleChat(
           pending: false,
           chatId,
           metrics,
+          message_cost: chatResult?.message_cost || 0,
+          cache_write_tokens: chatResult?.cache_write_tokens || 0,
+          llm_model: chatResult?.llm_model || null,
         };
         setLoadingResponse(false);
         emitAssistantMessageCompleteEvent(chatId);
@@ -186,10 +189,7 @@ export default function handleChat(
 }
 
 export function chatPrompt(workspace) {
-  return (
-    workspace?.openAiPrompt ??
-    "Given the following conversation, relevant context, and a follow up question, reply with an answer to the current question the user is asking. Return only your response to the question given the above information following the users instructions as needed."
-  );
+  return workspace?.openAiPrompt ?? "";
 }
 
 export function chatQueryRefusalResponse(workspace) {

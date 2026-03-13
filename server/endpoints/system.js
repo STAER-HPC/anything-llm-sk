@@ -427,7 +427,7 @@ function systemEndpoints(app) {
     [validatedRequest, flexUserRoleValid([ROLES.admin, ROLES.manager])],
     async (_, response) => {
       try {
-        const localFiles = await viewLocalFiles();
+        const localFiles = await viewLocalFiles(response.locals.user?.id);
         response.status(200).json({ localFiles });
       } catch (e) {
         console.error(e.message, e);
@@ -966,7 +966,7 @@ function systemEndpoints(app) {
 
   app.post(
     "/system/custom-models",
-    [validatedRequest, flexUserRoleValid([ROLES.admin])],
+    [validatedRequest, flexUserRoleValid([ROLES.all])],
     async (request, response) => {
       try {
         const { provider, apiKey = null, basePath = null } = reqBody(request);
@@ -1413,6 +1413,41 @@ function systemEndpoints(app) {
           success: false,
           error: `Unable to connect to ${engine}. Please verify your connection details.`,
         });
+      }
+    }
+  );
+
+  app.get(
+    "/system/model-price-hints",
+    [validatedRequest, flexUserRoleValid([ROLES.all])],
+    async (_request, response) => {
+      try {
+        const { PRICING_MAP, getModelPriceHint } = require("../utils/costCalculator");
+        const hints = {};
+        for (const modelId of Object.keys(PRICING_MAP)) {
+          hints[modelId] = getModelPriceHint(modelId);
+        }
+        response.status(200).json({ hints });
+      } catch (e) {
+        console.error(e.message, e);
+        response.sendStatus(500).end();
+      }
+    }
+  );
+
+  app.get(
+    "/system/user-costs",
+    [validatedRequest, flexUserRoleValid([ROLES.all])],
+    async (request, response) => {
+      try {
+        const user = multiUserMode(response)
+          ? await userFromSession(request, response)
+          : null;
+        const costs = await WorkspaceChats.calcUserCosts(user?.id ?? null);
+        response.status(200).json({ costs });
+      } catch (e) {
+        console.error(e.message, e);
+        response.sendStatus(500).end();
       }
     }
   );
