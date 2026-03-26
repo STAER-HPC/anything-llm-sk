@@ -20,7 +20,7 @@ import System from "@/models/system";
 const REASONING_CAPABLE_PROVIDERS = ["openrouter", "generic-openai"];
 
 const REASONING_EFFORT_OPTIONS = [
-  { value: "", label: "chat_window.workspace_llm_manager.reasoning_off" },
+  { value: "", label: "chat_window.workspace_llm_manager.reasoning_off" }, // "Default" — no reasoning param sent
   { value: "minimal", label: "chat_window.workspace_llm_manager.reasoning_minimal" },
   { value: "low", label: "chat_window.workspace_llm_manager.reasoning_low" },
   { value: "medium", label: "chat_window.workspace_llm_manager.reasoning_medium" },

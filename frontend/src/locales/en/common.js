@@ -987,7 +987,7 @@ const TRANSLATIONS = {
       missing_credentials_description: "Click to set up credentials",
       reasoning_effort: "Reasoning Effort",
       reasoning_effort_description: "Controls how many tokens the model uses for internal reasoning. Higher effort improves quality but increases cost and latency.",
-      reasoning_off: "Off",
+      reasoning_off: "Default",
       reasoning_minimal: "Minimal (~10%)",
       reasoning_low: "Low (~20%)",
       reasoning_medium: "Medium (~50%)",
