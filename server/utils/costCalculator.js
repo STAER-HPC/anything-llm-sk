@@ -7,98 +7,95 @@
 // the default. Models without `tiers` use flat pricing as before.
 const PRICING_MAP = {
   // ── Google ────────────────────────────────────────────────────────────────
-  "gemini/gemini-3.1-pro-preview": {
+  "google/gemini-3.1-pro-preview": {
     tiers: [
       {
         minTokens: 200001,
-        input: 1200.0,
-        output: 5460.0,
+        input: 701.4,
+        output: 2828.6,
+        cacheRead: 701.4,
+        cacheWrite: 2828.6,
       },
       {
         minTokens: 0,
-        input: 600.0,
-        output: 3640.0,
+        input: 186.07,
+        output: 1116.42,
+        cacheRead: 18.607,
+        cacheWrite: 1116.42,
       },
     ],
   },
-  "gemini/gemini-3-flash-preview": {
-    input: 152.0,
-    output: 910.0,
+  "google/gemini-3-flash-preview": {
+    input: 46.52,
+    output: 279.11,
+    cacheRead: 4.652,
+    cacheWrite: 279.11,
   },
-    "gemini/gemini-3.1-flash-lite-preview": {
-    input: 76.0,
-    output: 455.0,
+  "google/gemini-3.1-flash-lite-preview": {
+    input: 23.26,
+    output: 139.55,
+    cacheRead: 2.326,
+    cacheWrite: 139.55,
   },
 
   // ── Anthropic ─────────────────────────────────────────────────────────────
-  // claude-sonnet-4-6: standard rate up to 200k tokens; 200k+ rate above that
-  "anthropic/claude-sonnet-4-6": {
+  "anthropic/claude-sonnet-4.6": {
     tiers: [
       {
         minTokens: 200001,
         input: 1547.0,
         output: 5798.0,
-        cacheRead: 155.0,
-        cacheWrite: 1933.0,
+        cacheRead: 1547.0,
+        cacheWrite: 5798.0,
       },
       {
         minTokens: 0,
-        input: 774.0,
-        output: 3866.0,
-        cacheRead: 78.0,
-        cacheWrite: 967.0,
+        input: 279.105,
+        output: 1395.525,
+        cacheRead: 27.91,
+        cacheWrite: 348.881,
       },
     ],
   },
-  "anthropic/claude-opus-4-6": {
-    input: 1516.0,
-    output: 7579.0,
-    cacheRead: 152.0,
-    cacheWrite: 1895.0,
+  "anthropic/claude-opus-4.6": {
+    input: 465.175,
+    output: 2325.875,
+    cacheRead: 46.517,
+    cacheWrite: 581.469,
   },
 
-    // ── OpenAI ────────────────────────────────────────────────────────────────
+  // ── OpenAI ────────────────────────────────────────────────────────────────
   "openai/gpt-5.4": {
-    input: 760.0,
-    output: 4550.0,
-    cacheRead: 76.0,
-  },
-  "openai/gpt-5.3-chat-latest": {
-    input: 530.0,
-    output: 4240.0,
-    cacheRead: 53.0,
+    input: 232.59,
+    output: 1395.53,
+    cacheRead: 23.259,
+    cacheWrite: 1395.53,
   },
   "openai/gpt-5.3-codex": {
-    input: 530.0,
-    output: 4240.0,
-    cacheRead: 53.0,
+    input: 162.81,
+    output: 1302.49,
+    cacheRead: 16.281,
+    cacheWrite: 1302.49,
   },
-      // ── OpenRouter ────────────────────────────────────────────────────────────────
-  "openrouter/minimax/minimax-m2.5": {
-    input: 41.0,
-    output: 150.0,
+
+  // ── OpenRouter ────────────────────────────────────────────────────────────────
+  "deepseek/deepseek-v3.2": {
+    input: 26.05,
+    output: 39.075,
+    cacheRead: 2.605,
+    cacheWrite: 39.075,
   },
-  "openrouter/deepseek/deepseek-v3.2": {
-    input: 39.0,
-    output: 57.0,
+  "x-ai/grok-4.1-fast": {
+    input: 18.607,
+    output: 46.517,
+    cacheRead: 4.652,
+    cacheWrite: 46.517,
   },
-  "openrouter/x-ai/grok-4.1-fast": {
-    input: 30.0,
-    output: 50.0,
-  },
-  "openrouter/x-ai/grok-4.20-beta": {
-    tiers: [
-      {
-        minTokens: 200001,
-        input: 600.0,
-        output: 1800.0,
-      },
-      {
-        minTokens: 0,
-        input: 300.0,
-        output: 900.0,
-      },
-    ],
+  "xiaomi/mimo-v2-pro": {
+    input: 93.035,
+    output: 279.105,
+    cacheRead: 18.607,
+    cacheWrite: 279.105,
   },
 };
 

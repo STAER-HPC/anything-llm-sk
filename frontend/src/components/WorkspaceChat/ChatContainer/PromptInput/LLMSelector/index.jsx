@@ -16,6 +16,18 @@ import showToast from "@/utils/toast";
 import Workspace from "@/models/workspace";
 import System from "@/models/system";
 
+// Providers whose API accepts the OpenRouter `reasoning` parameter
+const REASONING_CAPABLE_PROVIDERS = ["openrouter", "generic-openai"];
+
+const REASONING_EFFORT_OPTIONS = [
+  { value: "", label: "chat_window.workspace_llm_manager.reasoning_off" },
+  { value: "minimal", label: "chat_window.workspace_llm_manager.reasoning_minimal" },
+  { value: "low", label: "chat_window.workspace_llm_manager.reasoning_low" },
+  { value: "medium", label: "chat_window.workspace_llm_manager.reasoning_medium" },
+  { value: "high", label: "chat_window.workspace_llm_manager.reasoning_high" },
+  { value: "xhigh", label: "chat_window.workspace_llm_manager.reasoning_xhigh" },
+];
+
 export default function LLMSelectorModal() {
   const { slug } = useParams();
   const { t } = useTranslation();
@@ -23,6 +35,7 @@ export default function LLMSelectorModal() {
   const [settings, setSettings] = useState(null);
   const [selectedLLMProvider, setSelectedLLMProvider] = useState(null);
   const [selectedLLMModel, setSelectedLLMModel] = useState("");
+  const [selectedReasoningEffort, setSelectedReasoningEffort] = useState("");
   const [availableProviders, setAvailableProviders] = useState(
     WORKSPACE_LLM_PROVIDERS
   );
@@ -43,6 +56,7 @@ export default function LLMSelectorModal() {
         setSelectedLLMProvider(selectedLLMProvider);
         autoScrollToSelectedLLMProvider(selectedLLMProvider);
         setSelectedLLMModel(selectedLLMModel);
+        setSelectedReasoningEffort(workspace.chatReasoningEffort ?? "");
       })
       .finally(() => setLoading(false));
   }, [slug]);
@@ -74,6 +88,7 @@ export default function LLMSelectorModal() {
       const { message } = await Workspace.update(slug, {
         chatProvider: selectedLLMProvider,
         chatModel: validatedModel,
+        chatReasoningEffort: selectedReasoningEffort || null,
       });
 
       if (!!message) throw new Error(message);
@@ -85,6 +100,8 @@ export default function LLMSelectorModal() {
       setSaving(false);
     }
   }
+
+  const showReasoningEffort = REASONING_CAPABLE_PROVIDERS.includes(selectedLLMProvider);
 
   if (loading) {
     return (
@@ -133,6 +150,32 @@ export default function LLMSelectorModal() {
           selectedLLMModel={selectedLLMModel}
           setSelectedLLMModel={setSelectedLLMModel}
         />
+        {showReasoningEffort && (
+          <div>
+            <div className="flex flex-col">
+              <label className="block input-label">
+                {t("chat_window.workspace_llm_manager.reasoning_effort")}
+              </label>
+              <p className="text-white text-opacity-60 text-xs font-medium py-1.5">
+                {t("chat_window.workspace_llm_manager.reasoning_effort_description")}
+              </p>
+            </div>
+            <select
+              value={selectedReasoningEffort}
+              onChange={(e) => {
+                setSelectedReasoningEffort(e.target.value);
+                setHasChanges(true);
+              }}
+              className="border-theme-modal-border border border-solid bg-theme-settings-input-bg text-white text-sm rounded-lg focus:outline-primary-button active:outline-primary-button outline-none block w-full p-2.5"
+            >
+              {REASONING_EFFORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {t(opt.label)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         {hasChanges && (
           <button
             type="button"
@@ -149,3 +192,4 @@ export default function LLMSelectorModal() {
     </div>
   );
 }
+

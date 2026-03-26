@@ -84,9 +84,9 @@ export default function LLMSelectorAction() {
       );
   }, []);
 
-  // This feature is disabled for multi-user instances where the user is not an admin
+  // This feature is disabled for multi-user instances where the user is not an admin or manager
   // This is because of the limitations of model selection currently and other nuances in controls.
-  if (!!user && user.role !== "admin") return null;
+  if (!!user && user.role !== "admin" && user.role !== "manager") return null;
 
   return (
     <>

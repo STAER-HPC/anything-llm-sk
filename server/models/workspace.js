@@ -54,6 +54,7 @@ const Workspace = {
     "agentModel",
     "queryRefusalResponse",
     "vectorSearchMode",
+    "chatReasoningEffort",
   ],
 
   validations: {
@@ -126,6 +127,12 @@ const Workspace = {
         !["default", "rerank"].includes(value)
       )
         return "default";
+      return value;
+    },
+    chatReasoningEffort: (value) => {
+      const VALID_EFFORTS = ["xhigh", "high", "medium", "low", "minimal", "none"];
+      if (!value || typeof value !== "string" || !VALID_EFFORTS.includes(value))
+        return null;
       return value;
     },
   },
