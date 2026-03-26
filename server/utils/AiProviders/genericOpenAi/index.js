@@ -171,7 +171,7 @@ class GenericOpenAiLLM {
     return textResponse;
   }
 
-  async getChatCompletion(messages = null, { temperature = 1, reasoningEffort = null }) {
+  async getChatCompletion(messages = null, { temperature = 1, reasoningEffort = null, providerOrder = null }) {
     // For Anthropic models via LiteLLM/ProxyAPI: wrap the system message and the
     // last assistant message in content blocks with cache_control so the proxy
     // triggers prompt cache creation. The anthropic-beta header is required by
@@ -219,6 +219,7 @@ class GenericOpenAiLLM {
       payload.temperature = temperature;
     }
     if (reasoningEffort) payload.reasoning = { effort: reasoningEffort };
+    if (providerOrder) payload.provider = { order: [providerOrder], allow_fallbacks: false };
 
     const result = await LLMPerformanceMonitor.measureAsyncFunction(
       this.openai.chat.completions
@@ -247,7 +248,7 @@ class GenericOpenAiLLM {
     };
   }
 
-  async streamGetChatCompletion(messages = null, { temperature = 1.0, reasoningEffort = null }) {
+  async streamGetChatCompletion(messages = null, { temperature = 1.0, reasoningEffort = null, providerOrder = null }) {
     // For Anthropic models via LiteLLM/ProxyAPI: wrap the system message and the
     // last assistant message in content blocks with cache_control so the proxy
     // triggers prompt cache creation. The anthropic-beta header is required by
@@ -297,6 +298,7 @@ class GenericOpenAiLLM {
       payload.temperature = temperature;
     }
     if (reasoningEffort) payload.reasoning = { effort: reasoningEffort };
+    if (providerOrder) payload.provider = { order: [providerOrder], allow_fallbacks: false };
 
     const measuredStreamRequest = await LLMPerformanceMonitor.measureStream(
       this.openai.chat.completions.create(payload, requestOptions),

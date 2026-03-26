@@ -540,6 +540,14 @@ const System = {
         return { models: [], error: e.message };
       });
   },
+  openrouterProviders: async function (model) {
+    return fetch(
+      `${API_BASE}/system/openrouter-providers?model=${encodeURIComponent(model)}`,
+      { method: "GET", headers: baseHeaders() }
+    )
+      .then((res) => res.json())
+      .catch((e) => ({ providers: [], error: e.message }));
+  },
   chats: async (offset = 0) => {
     return await fetch(`${API_BASE}/system/workspace-chats`, {
       method: "POST",

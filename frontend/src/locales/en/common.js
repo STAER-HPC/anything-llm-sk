@@ -993,6 +993,12 @@ const TRANSLATIONS = {
       reasoning_medium: "Medium (~50%)",
       reasoning_high: "High (~80%)",
       reasoning_xhigh: "Maximum (~95%)",
+      provider_order: "Provider Pin",
+      provider_order_description: "Pin requests to a specific OpenRouter provider. Helps keep prompt cache hits by avoiding provider switches. Uses provider.order with fallbacks disabled.",
+      provider_order_automatic: "Automatic (load balanced)",
+      provider_order_loading: "Loading providers…",
+      provider_order_custom: "Custom provider slug…",
+      provider_order_custom_placeholder: "e.g. anthropic, google-vertex/us-east5",
     },
   },
 

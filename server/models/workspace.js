@@ -55,6 +55,7 @@ const Workspace = {
     "queryRefusalResponse",
     "vectorSearchMode",
     "chatReasoningEffort",
+    "chatProviderOrder",
   ],
 
   validations: {
@@ -134,6 +135,10 @@ const Workspace = {
       if (!value || typeof value !== "string" || !VALID_EFFORTS.includes(value))
         return null;
       return value;
+    },
+    chatProviderOrder: (value) => {
+      if (!value || typeof value !== "string") return null;
+      return String(value).slice(0, 128);
     },
   },
 

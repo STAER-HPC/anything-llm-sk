@@ -167,6 +167,7 @@ async function chatSync({
       temperature:
         temperature ?? workspace?.openAiTemp ?? LLMConnector.defaultTemp,
       reasoningEffort: workspace?.chatReasoningEffort ?? null,
+      providerOrder: workspace?.chatProviderOrder ?? null,
     }
   );
 
@@ -421,6 +422,7 @@ async function streamChat({
     temperature:
       temperature ?? workspace?.openAiTemp ?? LLMConnector.defaultTemp,
     reasoningEffort: workspace?.chatReasoningEffort ?? null,
+    providerOrder: workspace?.chatProviderOrder ?? null,
   });
   const completeText = await LLMConnector.handleStream(
     responseInterceptor,

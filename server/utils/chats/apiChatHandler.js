@@ -308,6 +308,7 @@ async function chatSync({
     await LLMConnector.getChatCompletion(messages, {
       temperature: workspace?.openAiTemp ?? LLMConnector.defaultTemp,
       reasoningEffort: workspace?.chatReasoningEffort ?? null,
+      providerOrder: workspace?.chatProviderOrder ?? null,
     });
 
   if (!textResponse) {
@@ -651,6 +652,7 @@ async function streamChat({
       await LLMConnector.getChatCompletion(messages, {
         temperature: workspace?.openAiTemp ?? LLMConnector.defaultTemp,
         reasoningEffort: workspace?.chatReasoningEffort ?? null,
+        providerOrder: workspace?.chatProviderOrder ?? null,
       });
     completeText = textResponse;
     metrics = performanceMetrics;
@@ -667,6 +669,7 @@ async function streamChat({
     const stream = await LLMConnector.streamGetChatCompletion(messages, {
       temperature: workspace?.openAiTemp ?? LLMConnector.defaultTemp,
       reasoningEffort: workspace?.chatReasoningEffort ?? null,
+      providerOrder: workspace?.chatProviderOrder ?? null,
     });
     completeText = await LLMConnector.handleStream(response, stream, {
       uuid,

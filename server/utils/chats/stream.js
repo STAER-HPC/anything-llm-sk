@@ -250,6 +250,7 @@ async function streamChatWithWorkspace(
       await LLMConnector.getChatCompletion(messages, {
         temperature: workspace?.openAiTemp ?? LLMConnector.defaultTemp,
         reasoningEffort: workspace?.chatReasoningEffort ?? null,
+        providerOrder: workspace?.chatProviderOrder ?? null,
       });
 
     completeText = textResponse;
@@ -267,6 +268,7 @@ async function streamChatWithWorkspace(
     const stream = await LLMConnector.streamGetChatCompletion(messages, {
       temperature: workspace?.openAiTemp ?? LLMConnector.defaultTemp,
       reasoningEffort: workspace?.chatReasoningEffort ?? null,
+      providerOrder: workspace?.chatProviderOrder ?? null,
     });
     completeText = await LLMConnector.handleStream(response, stream, {
       uuid,
