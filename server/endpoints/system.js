@@ -987,7 +987,9 @@ function systemEndpoints(app) {
   );
 
   // Returns available provider slugs for a given model by calling the configured
-  // base path's /models/{model_id} endpoint (polza.ai or any OpenRouter-compatible proxy).
+  // proxy's /models/{model_id} endpoint. No calls to external services.
+  // SLUG_OVERRIDES handles provider names whose slugs don't follow the simple
+  // lowercase+hyphen rule (e.g. "Google" → "google-vertex", not "google").
   app.get(
     "/system/openrouter-providers",
     [validatedRequest, flexUserRoleValid([ROLES.all])],
@@ -1000,7 +1002,10 @@ function systemEndpoints(app) {
         const apiKey = process.env.GENERIC_OPEN_AI_API_KEY ?? null;
         if (!basePath) return response.status(200).json({ providers: [], error: "base path not configured" });
 
-        // model may contain a slash (e.g. "google/gemini-3-flash-preview") — do not encode it
+        const SLUG_OVERRIDES = {
+          "google": "google-vertex",
+        };
+
         const url = `${basePath}/models/${model}`;
         const headers = {};
         if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
@@ -1011,12 +1016,13 @@ function systemEndpoints(app) {
         }
 
         const data = await res.json();
-        // provider.name is e.g. "Google AI Studio", "Anthropic", "Amazon Bedrock"
-        // convert to the slug used in OpenRouter's provider.order by lowercasing + hyphenating
-        const providers = (data?.providers ?? []).map((p) => ({
-          slug: p.name.toLowerCase().replace(/\s+/g, "-"),
-          label: p.name,
-        }));
+        const providers = (data?.providers ?? []).map((p) => {
+          const defaultSlug = p.name.toLowerCase().replace(/\s+/g, "-");
+          return {
+            slug: SLUG_OVERRIDES[defaultSlug] ?? defaultSlug,
+            label: p.name,
+          };
+        });
 
         return response.status(200).json({ providers, error: null });
       } catch (e) {
