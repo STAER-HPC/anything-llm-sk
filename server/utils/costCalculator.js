@@ -31,6 +31,12 @@ const PRICING_MAP = {
     cacheRead: 4.652,
     cacheWrite: 279.11,
   },
+  "google/gemini-3.5-flash": {
+    input: 135.426,
+    output: 812.559,
+    cacheRead: 13.543,
+    cacheWrite: 135.426,
+  },
   "google/gemini-3.1-flash-lite-preview": {
     input: 23.26,
     output: 139.55,
@@ -63,8 +69,31 @@ const PRICING_MAP = {
     cacheRead: 46.517,
     cacheWrite: 581.469,
   },
-
+  "anthropic/claude-opus-4.7": {
+    input: 465.175,
+    output: 2325.875,
+    cacheRead: 46.517,
+    cacheWrite: 581.469,
+  },
+  "anthropic/claude-opus-4.8": {
+    input: 465.175,
+    output: 2325.875,
+    cacheRead: 46.517,
+    cacheWrite: 581.469,
+  },
+  "anthropic/claude-fable-5": {
+    input: 920.32,
+    output: 4601.6,
+    cacheRead: 92.032,
+    cacheWrite: 1150.4,
+  },
   // ── OpenAI ────────────────────────────────────────────────────────────────
+  "openai/gpt-5.5": {
+    input: 440.39,
+    output: 2642.33,
+    cacheRead: 44.039,
+    cacheWrite: 1395.53,
+  },
   "openai/gpt-5.4": {
     input: 232.59,
     output: 1395.53,
@@ -79,11 +108,17 @@ const PRICING_MAP = {
   },
 
   // ── OpenRouter ────────────────────────────────────────────────────────────────
-  "deepseek/deepseek-v3.2": {
-    input: 26.05,
-    output: 39.075,
-    cacheRead: 2.605,
-    cacheWrite: 39.075,
+  "deepseek/deepseek-v4-pro": {
+    input: 38.314,
+    output: 76.628,
+    cacheRead: 3.19,
+    cacheWrite: 152.563,
+  },
+  "deepseek/deepseek-v4-flash": {
+    input: 12.275,
+    output: 24.55,
+    cacheRead: 2.455,
+    cacheWrite: 12.275,
   },
   "x-ai/grok-4.1-fast": {
     input: 18.607,
@@ -91,11 +126,23 @@ const PRICING_MAP = {
     cacheRead: 4.652,
     cacheWrite: 46.517,
   },
-  "xiaomi/mimo-v2-pro": {
-    input: 93.035,
-    output: 279.105,
-    cacheRead: 18.607,
-    cacheWrite: 279.105,
+  "xiaomi/mimo-v2.5-pro": {
+    input: 40.92,
+    output: 81.84,
+    cacheRead: 0.339,
+    cacheWrite: 81.84,
+  },
+  "minimax/minimax-m3": {
+    input: 27.61,
+    output: 110.438,
+    cacheRead: 5.522,
+    cacheWrite: 27.61,
+  },
+  "z-ai/glm-5.2": {
+    input: 130.529,
+    output: 410.235,
+    cacheRead: 24.241,
+    cacheWrite: 410.235,
   },
 };
 

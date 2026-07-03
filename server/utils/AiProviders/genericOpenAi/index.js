@@ -219,7 +219,7 @@ class GenericOpenAiLLM {
       payload.temperature = temperature;
     }
     if (reasoningEffort) payload.reasoning = { effort: reasoningEffort };
-    if (providerOrder) payload.provider = { order: [providerOrder], allow_fallbacks: false };
+    if (providerOrder) payload.provider = { only: [providerOrder], allow_fallbacks: false };
 
     const result = await LLMPerformanceMonitor.measureAsyncFunction(
       this.openai.chat.completions
@@ -298,7 +298,7 @@ class GenericOpenAiLLM {
       payload.temperature = temperature;
     }
     if (reasoningEffort) payload.reasoning = { effort: reasoningEffort };
-    if (providerOrder) payload.provider = { order: [providerOrder], allow_fallbacks: false };
+    if (providerOrder) payload.provider = { only: [providerOrder], allow_fallbacks: false };
 
     const measuredStreamRequest = await LLMPerformanceMonitor.measureStream(
       this.openai.chat.completions.create(payload, requestOptions),
